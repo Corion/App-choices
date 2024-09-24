@@ -53,4 +53,10 @@ sub to_JSON( $self ) {
     return encode_json( \%repr );
 }
 
+sub from_row( $class, $row, $question=undef ) {
+    my $id = $row->{result_id};
+    $row = decode_json($row->{result_json});
+    return $class->new({ result_id => $id, $row->%*, question => $question });
+}
+
 1;
