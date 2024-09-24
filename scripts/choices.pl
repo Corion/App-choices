@@ -25,7 +25,7 @@ has 'choice_type' => (
 sub from_row( $class, $row ) {
     $row->{choice_json} = decode_json($row->{choice_json})
         if defined $row->{choice_json};
-    return Choice::Choice->new({ $row->%* });
+    return $class->new({ $row->%* });
 }
 
 package Choice::Question 0.01;
