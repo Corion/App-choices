@@ -9,7 +9,6 @@ use Mojo::JSON 'decode_json', 'encode_json';
 
 has 'choice_id' => (
     is => 'ro',
-    required => 1,
 );
 
 has 'choice_json' => (
@@ -39,13 +38,12 @@ use Moo 2;
 use POSIX 'strftime';
 
 has choices => (
-    is => 'ro',
-    required => 1,    
+    is => 'lazy',
+    default => sub { [] },
 );
 
 has 'question_id' => (
     is => 'ro',
-    required => 1,
 );
 
 has 'question_text' => (
@@ -145,7 +143,7 @@ sub open_questions($limit=3) {
           join choice c on c.question_id = q.question_id
         order by c.question_id, c.choice_id
     SQL
-    
+
     # Create choices from that
     my %choices;
     for my $c ($open_choices->@*) {
