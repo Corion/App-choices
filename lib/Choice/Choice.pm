@@ -8,7 +8,7 @@ has 'choice_id' => (
     is => 'ro',
 );
 
-has 'choice_json' => (
+has 'data' => (
     is => 'ro',
     required => 1,
 );

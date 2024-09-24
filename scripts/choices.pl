@@ -135,26 +135,28 @@ my $q = Choice::Question->new(
 
 $q->add(
     choice_type => 'text',
-    choice_json => {
+    data => {
         title => 'straight',
         text  => '40 km/h',
     },
 );
 $q->add(
     choice_type => 'text',
-    choice_json => {
+    data => {
         title => 'straight',
         text  => '11 m/s',
     },
 );
 $q->add(
     choice_type => 'text',
-    choice_json => {
+    data => {
         title => 'counter',
         text  => 'An African or European swallow?',
     },
 );
-use Data::Dumper; warn Dumper $q;
+
+#use Data::Dumper; warn Dumper $q;
+
 my $id = store_question( $dbh, $q );
 say "Stored question as $id";
 
@@ -251,9 +253,9 @@ img {
     <div class="choice">
         <a href="<%= url_for( '/choose' )->query(status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>">
 %              if( $c->choice_type eq 'image' ) {
-        <img src="/img/<%= $c->choice_json->{image} %>" />
+        <img src="/img/<%= $c->data->{image} %>" />
 %              } elsif( $c->choice_type eq 'text' ) {
-        <%= $c->choice_json->{text} %>
+        <%= $c->data->{text} %>
 %              }
         </a>
     </div>
