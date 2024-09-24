@@ -196,7 +196,6 @@ get '/choose' => sub( $c ) {
     };
 
     # Store result in DB
-    # XXX
     store_result( $dbh, $result );
 
     $c->redirect_to( "/" );
