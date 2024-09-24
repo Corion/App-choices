@@ -34,12 +34,14 @@ create view question_status as
         from result
     )
     select
-        q.*
+        q.question_id
+      , q.question_json
       , r.result_id
-      , r.created
+      , r.result_json
       , r.status
+      , r.created
       , r.choice_id
-      , c.*
+      , c.choice_json
     from question q
     left join results rl on q.question_id = rl.question_id
     left join "result" r on r.result_id = rl.result_id
@@ -51,7 +53,7 @@ create view open_questions as
     select *
     from question_status
     where status is null
-       or status in ('skipped')
+       or status in ('skipped','open')
     order by case when status is null then 1 else 2 end, created asc
 ;
 create view new_questions as

@@ -47,14 +47,24 @@ sub open_questions($limit=3) {
         $choices{ $ch->question_id } //= [];
         push $choices{ $ch->question_id }->@*, $ch;
     }
-    # Create questions
-    my @questions = map {
-        Choice::Question->from_row( $_, $choices{ $_->{question_id}})
+    # Create responses wrapping our questions
+    my @responses = map {
+        my $q = Choice::Question->from_row( $_, $choices{ $_->{question_id}});
+
+        my $res;
+        # As these are all open questions, create fake responses wrapping them
+        # or use the responses we already got ("skipped", "open" (reopened))
+        if( $_->{response_id} ) {
+            $res = Choice::Result->from_row( $_, $q );
+
+        } else {
+            $res = Choice::Result->new( question => $q );
+        }
+
+        $res
     } $open_questions->@*;
 
-    # As these are all open questions, create fake responses wrapping them:
-
-    return @questions;
+    return @responses;
 }
 
 sub inflate_question( $dbh, $id ) {
@@ -154,11 +164,11 @@ plugin 'DefaultHelpers';
 get '/' => sub($c) {
     dump_questions();
     my @open = open_questions(3);
-    $c->stash( questions => \@open );
+    $c->stash( responses => \@open );
     $c->render('index')
 };
 
-my %valid_status = map { $_ => 1 } (qw(answered skipped none));
+my %valid_status = map { $_ => 1 } (qw(answered skipped none open));
 get '/choose' => sub( $c ) {
     my $question = $c->param('question');
     my $choice = $c->param('choice');
@@ -182,10 +192,6 @@ get '/choose' => sub( $c ) {
         status => $status,
         maybe choice => $ch,
     );
-    #say "Question status: " . $status;
-    #if( $ch ) {
-    #    say "Question result: " . $ch->choice_json->{image};
-    #};
 
     # Store result in DB
     store_result( $dbh, $result );
@@ -229,8 +235,9 @@ img {
 </head>
 <body>
 %# We also want to display answered questions here...
-% if( $questions->@* ) {
-%     for my $question ($questions->@*) {
+% if( $responses->@* ) {
+%     for my $response ($responses->@*) {
+%         my $question = $response->question;
 <div class="question" id="question-<%= $question->question_id %>">
 <div class="title"><%= $question->question_text %></div>
 %          if( $question->context ) {
