@@ -3,6 +3,11 @@ use 5.020;
 use experimental 'signatures';
 use Moo 2;
 use POSIX 'strftime';
+use Mojo::JSON 'decode_json', 'encode_json';
+
+has 'result_id' => (
+    is => 'ro',
+);
 
 has 'question' => (
     is => 'ro',
@@ -31,6 +36,21 @@ sub _timestamp($ts=time) {
 
 sub _current_timestamp( $self ) {
     return _timestamp()
+}
+
+sub to_JSON( $self ) {
+    my %repr = $self->%*;
+
+    if( $repr{ choice }) {
+        $repr{ choice_id } = (delete $repr{ choice })->choice_id;
+    }
+
+    if( $repr{ question }) {
+        $repr{ question_id } = (delete $repr{ question })->question_id;
+    }
+
+    delete $repr{ result_id };
+    return encode_json( \%repr );
 }
 
 1;

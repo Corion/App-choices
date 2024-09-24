@@ -33,26 +33,27 @@ sub open_questions($limit=3) {
     SQL
 
     my $open_choices = $dbh->selectall_arrayref(<<~'SQL', { Slice => {}});
-        select c.*
+        select c.choice_id
+             , c.choice_json
           from open_questions q
           join choice c on c.question_id = q.question_id
-        order by c.question_id, c.choice_id
+      order by c.question_id, c.choice_id
     SQL
 
     # Create choices from that
     my %choices;
     for my $c ($open_choices->@*) {
         my $ch = Choice::Choice->from_row( $c );
-        $choices{ $c->{ question_id }} //= [];
-        push $choices{ $c->{ question_id }}->@*, $ch;
+        $choices{ $ch->question_id } //= [];
+        push $choices{ $ch->question_id }->@*, $ch;
     }
     # Create questions
     my @questions = map {
-        Choice::Question->new({
-            $_->%*,
-            choices => $choices{ $_->{question_id}},
-        });
+        Choice::Question->from_row( $_, $choices{ $_->{question_id}})
     } $open_questions->@*;
+
+    # As these are all open questions, create fake responses wrapping them:
+
     return @questions;
 }
 
@@ -60,68 +61,60 @@ sub inflate_question( $dbh, $id ) {
     my $choices = $dbh->selectall_arrayref(<<~'SQL', { Slice => {}}, 0+$id );
         select c.*
           from choice c
-         where question_id = ?
+         where question_id = 0+?
         order by c.question_id, c.choice_id
     SQL
     my $question = $dbh->selectall_arrayref(<<~'SQL', { Slice => {}}, 0+$id);
         select q.*
           from question q
-         where question_id = ?
+         where question_id = 0+?
     SQL
 
     # Create choices from that
     my @choices = map {
         Choice::Choice->from_row($_);
     } $choices->@*;
+
     # Create questions
-    return Choice::Question->new({
-        $question->[0]->%*,
-        choices => \@choices
-    });
+    return Choice::Question->from_row($question->[0], \@choices);
 }
 
+# Make these into methods of each class instead
 # XXX ::Result -> ::Answer ?!
 sub store_result( $dbh, $result ) {
     my $store = $dbh->prepare(<<~'SQL');
-        insert into result (question_id,created,status,choice)
-                    values (?,?,?,?)
+        insert into result (result_id, result_json)
+                    values (?,?)
         returning result_id
     SQL
 
-    my $id = $result->choice ? $result->choice->choice_id : undef;
-    $store->execute(
-        $result->question->question_id,
-        $result->created,
-        $result->status,
-        $id );
+    $store->execute($result->result_id, $result->to_JSON);
     my $res = $store->fetchall_arrayref({});
     return $res->[0]->{result_id};
 }
 
 sub store_question( $dbh, $question ) {
     my $store = $dbh->prepare(<<~'SQL');
-        insert into question (question_id, question_text, context, created, creator)
-                    values (?,?,?,?,?)
+        insert into question (question_id, question_json)
+                    values (?,?)
         returning question_id
     SQL
 
     $store->execute(
         $question->question_id,
-        $question->question_text,
-        $question->context,
-        $question->created,
-        $question->creator,
+        $question->to_JSON
     );
     my $res = $store->fetchall_arrayref({});
     my $question_id = $res->[0]->{question_id};
 
     my $store_choice = $dbh->prepare(<<~'SQL');
-        insert into choice (choice_json, choice_type, question_id)
-                    values (?,?,?)
+        insert into choice (choice_id, choice_json)
+                    values (?,?)
         returning choice_id
     SQL
     for my $c ($question->choices->@*) {
-        $store_choice->execute( $c->to_JSON, $c->choice_type, $question_id );
+        warn $c->to_JSON( $question_id );
+        $store_choice->execute( $c->choice_id, $c->to_JSON( $question_id ) );
     }
 
     return $question_id;
@@ -132,7 +125,6 @@ my $q = Choice::Question->new(
     context => 'This is a Monty Python question',
     creator => $0,
 );
-
 $q->add(
     choice_type => 'text',
     data => {
@@ -155,8 +147,6 @@ $q->add(
     },
 );
 
-#use Data::Dumper; warn Dumper $q;
-
 my $id = store_question( $dbh, $q );
 say "Stored question as $id";
 
@@ -178,7 +168,7 @@ get '/choose' => sub( $c ) {
         or die "Invalid status '$status'";
 
     # fetch question
-    say "<$question>";
+    #say "<$question>";
     my $q = inflate_question( $dbh, 0+$question )
         or die "Unknown question: '$question'";
     # fetch choice, if given
@@ -192,10 +182,10 @@ get '/choose' => sub( $c ) {
         status => $status,
         maybe choice => $ch,
     );
-    say "Question status: " . $status;
-    if( $ch ) {
-        say "Question result: " . $ch->choice_json->{image};
-    };
+    #say "Question status: " . $status;
+    #if( $ch ) {
+    #    say "Question result: " . $ch->choice_json->{image};
+    #};
 
     # Store result in DB
     store_result( $dbh, $result );
