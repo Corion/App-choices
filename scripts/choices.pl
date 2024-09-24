@@ -1,126 +1,13 @@
 #!perl
 use 5.020;
-
-package Choice::Choice;
-use 5.020;
-use experimental 'signatures';
-use Moo 2;
-use Mojo::JSON 'decode_json', 'encode_json';
-
-has 'choice_id' => (
-    is => 'ro',
-);
-
-has 'choice_json' => (
-    is => 'ro',
-    required => 1,
-);
-
-has 'choice_type' => (
-    is => 'ro',
-    required => 1,
-);
-
-sub from_row( $class, $row ) {
-    $row->{choice_json} = decode_json($row->{choice_json})
-        if defined $row->{choice_json};
-    return $class->new({ $row->%* });
-}
-
-sub to_JSON( $self ) {
-    return encode_json( $self->choice_json );
-}
-
-package Choice::Question 0.01;
-use 5.020;
-use experimental 'signatures';
-use experimental 'isa';
-use Moo 2;
-use POSIX 'strftime';
-
-has choices => (
-    is => 'lazy',
-    default => sub { [] },
-);
-
-has 'question_id' => (
-    is => 'ro',
-);
-
-has 'question_text' => (
-    is => 'ro',
-    required => 1,
-);
-
-has 'context' => (
-    is => 'ro',
-);
-
-has 'creator' => (
-    is => 'ro',
-);
-
-has 'created' => (
-    is => 'ro',
-    default => \&_current_timestamp,
-);
-
-sub _timestamp($ts=time) {
-    return strftime '%Y-%m-%dT%H:%M:%SZ', gmtime($ts)
-}
-
-sub _current_timestamp( $self ) {
-    return _timestamp()
-}
-
-sub add( $self, @args ) {
-    if( !ref $args[0] or !($args[0] isa 'Choice::Choice') ) {
-        @args = Choice::Choice->new( @args );
-    }
-    push $self->choices->@*, @args;
-}
-
-package Choice::Result 0.01;
-use 5.020;
-use experimental 'signatures';
-use Moo 2;
-use POSIX 'strftime';
-
-has 'question' => (
-    is => 'ro',
-    required => 1,
-);
-
-# skipped, answered, declined, none; if missing, question has never been asked
-# Or should we keep that in another table of actions?!!
-# No - any question can have a lot of results!
-has 'status' => (
-    is => 'ro',
-);
-
-has 'created' => (
-    is => 'ro',
-    default => \&_current_timestamp,
-);
-
-has 'choice' => (
-    is => 'ro',
-);
-
-sub _timestamp($ts=time) {
-    return strftime '%Y-%m-%dT%H:%M:%SZ', gmtime($ts)
-}
-
-sub _current_timestamp( $self ) {
-    return _timestamp()
-}
-
-package main;
-use 5.020;
 use Mojolicious::Lite -signatures;
 use Mojo::SQLite;
 use DBIx::RunSQL;
 use PerlX::Maybe;
+
+use Choice::Choice;
+use Choice::Question;
+use Choice::Result;
 
 my $dbh = DBIx::RunSQL->create(
     dsn => 'dbi:SQLite:dbname=:memory:',
