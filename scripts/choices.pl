@@ -181,7 +181,7 @@ sub inflate_question( $dbh, $id ) {
           from question q
          where question_id = ?
     SQL
-    
+
     # Create choices from that
     my @choices = map {
         Choice::Choice->from_row($_);
@@ -284,10 +284,10 @@ get '/choose' => sub( $c ) {
     my $question = $c->param('question');
     my $choice = $c->param('choice');
     my $status = $c->param('status');
-    
+
     $valid_status{ $status }
         or die "Invalid status '$status'";
-    
+
     # fetch question
     say "<$question>";
     my $q = inflate_question( $dbh, 0+$question )
@@ -307,11 +307,11 @@ get '/choose' => sub( $c ) {
     if( $ch ) {
         say "Question result: " . $ch->choice_json->{image};
     };
-    
+
     # Store result in DB
     # XXX
     store_result( $dbh, $result );
-    
+
     $c->redirect_to( "/" );
 };
 
@@ -363,7 +363,11 @@ img {
 %          for my $c ($question->choices->@*) {
     <div class="choice">
         <a href="<%= url_for( '/choose' )->query(status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>">
+%              if( $c->choice_type eq 'image' ) {
         <img src="/img/<%= $c->choice_json->{image} %>" />
+%              } elsif( $c->choice_type eq 'text' ) {
+        <%= $c->choice_json->{text} %>
+%              }
         </a>
     </div>
 %          }
