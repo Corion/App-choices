@@ -236,6 +236,7 @@ img {
 </style>
 </head>
 <body>
+%# We also want to display answered questions here...
 % if( $questions->@* ) {
 %     for my $question ($questions->@*) {
 <div class="question" id="question-<%= $question->question_id %>">
