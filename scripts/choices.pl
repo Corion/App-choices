@@ -34,6 +34,7 @@ sub to_JSON( $self ) {
 package Choice::Question 0.01;
 use 5.020;
 use experimental 'signatures';
+use experimental 'isa';
 use Moo 2;
 use POSIX 'strftime';
 
@@ -70,6 +71,13 @@ sub _timestamp($ts=time) {
 
 sub _current_timestamp( $self ) {
     return _timestamp()
+}
+
+sub add( $self, @args ) {
+    if( !ref $args[0] or !($args[0] isa 'Choice::Choice') ) {
+        @args = Choice::Choice->new( @args );
+    }
+    push $self->choices->@*, @args;
 }
 
 package Choice::Result 0.01;
@@ -192,7 +200,7 @@ sub store_result( $dbh, $result ) {
                     values (?,?,?,?)
         returning result_id
     SQL
-    
+
     my $id = $result->choice ? $result->choice->choice_id : undef;
     $store->execute(
         $result->question->question_id,
@@ -202,6 +210,66 @@ sub store_result( $dbh, $result ) {
     my $res = $store->fetchall_arrayref({});
     return $res->[0]->{result_id};
 }
+
+sub store_question( $dbh, $question ) {
+    my $store = $dbh->prepare(<<~'SQL');
+        insert into question (question_id, question_text, context, created, creator)
+                    values (?,?,?,?,?)
+        returning question_id
+    SQL
+
+    $store->execute(
+        $question->question_id,
+        $question->question_text,
+        $question->context,
+        $question->created,
+        $question->creator,
+    );
+    my $res = $store->fetchall_arrayref({});
+    my $question_id = $res->[0]->{question_id};
+
+    my $store_choice = $dbh->prepare(<<~'SQL');
+        insert into choice (choice_json, choice_type, question_id)
+                    values (?,?,?)
+        returning choice_id
+    SQL
+    for my $c ($question->choices->@*) {
+        $store_choice->execute( $c->to_JSON, $c->choice_type, $question_id );
+    }
+
+    return $question_id;
+}
+
+my $q = Choice::Question->new(
+    question_text => 'What is the airspeed of an unladen swallow?',
+    context => 'This is a Monty Python question',
+    creator => $0,
+);
+
+$q->add(
+    choice_type => 'text',
+    choice_json => {
+        title => 'straight',
+        text  => '40 km/h',
+    },
+);
+$q->add(
+    choice_type => 'text',
+    choice_json => {
+        title => 'straight',
+        text  => '11 m/s',
+    },
+);
+$q->add(
+    choice_type => 'text',
+    choice_json => {
+        title => 'counter',
+        text  => 'An African or European swallow?',
+    },
+);
+use Data::Dumper; warn Dumper $q;
+my $id = store_question( $dbh, $q );
+say "Stored question as $id";
 
 plugin 'DefaultHelpers';
 get '/' => sub($c) {
