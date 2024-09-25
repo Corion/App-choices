@@ -268,6 +268,7 @@ get '/img/<*image>' => sub( $c ) {
 };
 
 # Serve precompressed files
+# This should be Mojolicious::Static::Role::Compressed, which does caching etc.
 get '/<*jsfile>.js' => sub($c) {
     my $fn = $c->param('jsfile') . ".js";
     $fn =~ s/[^-\w.]//g;
