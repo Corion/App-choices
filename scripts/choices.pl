@@ -272,10 +272,9 @@ __DATA__
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="bootstrap.5.3.3.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
+<script type="module" src="/morphdom-esm.2.7.4.js"></script>
+<script src="morphdom-swap.1.9.12.js"></script>
 <script src="htmx.2.0.1.min.js"></script>
-<script src="ws.2.0.1.js"></script>
-<script src="debug.2.0.1.js"></script>
-<script src="loading-states.2.0.1.js"></script>
 
 </head>
 <body hx-boost="true" hx-ext="morphdom-swap" hx-swap="morphdom">

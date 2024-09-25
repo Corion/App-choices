@@ -1,0 +1,22 @@
+img {
+    max-width: 400px;
+    max-height: 400px;
+}
+
+.current {
+    font-weight: 800;
+}
+
+.choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 400px);
+    grid-template-rows: masonry;
+    column-gap: 10px;
+    row-gap: 10px;
+    justify-items: center;
+    align-items: center;
+}
+
+.answered {
+    border: solid red 2px;
+}
