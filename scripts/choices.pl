@@ -4,6 +4,7 @@ use Mojolicious::Lite -signatures;
 use Mojo::SQLite;
 use DBIx::RunSQL;
 use PerlX::Maybe;
+use File::Basename 'dirname';
 
 use Choice::Choice;
 use Choice::Question;
@@ -235,6 +236,28 @@ get '/img/<*image>' => sub( $c ) {
     $c->reply->asset(Mojo::Asset::File->new(path => $fn));
 };
 
+# Serve precompressed files
+get '/<*jsfile>.js' => sub($c) {
+    my $fn = $c->param('jsfile') . ".js";
+    $fn =~ s/[^-\w.]//g;
+    my $mojo_base = $ENV{MOJO_HOME} // dirname($0);
+    my $base = "$mojo_base/public";
+    my $file = "$base/$fn";
+    my $gzipped = "$file.gz";
+    say "Looking for $gzipped";
+    if( -e "$gzipped" ) {
+        say "Found '$gzipped'";
+        $file = $gzipped;
+        $c->res->headers->content_encoding('gzip');
+    } else {
+        say "No precompressed version found, sending '$file'";
+    }
+    my $ct = app->types->type("js");
+    $c->res->headers->content_type($ct);
+    $c->reply->file($file);
+    return 200;
+};
+
 app->start;
 
 __DATA__
@@ -243,32 +266,19 @@ __DATA__
 <html>
 <head>
 <title>Choices</title>
-<style>
-img {
-    max-width: 400px;
-    max-height: 400px;
-}
+<link rel="stylesheet" href="choices.css" />
 
-.current {
-    font-weight: 800;
-}
+<meta htmx.config.allowScriptTags="true">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="bootstrap.5.3.3.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
-.choices {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 400px);
-    grid-template-rows: masonry;
-    column-gap: 10px;
-    row-gap: 10px;
-    justify-items: center;
-    align-items: center;
-}
+<script src="htmx.2.0.1.min.js"></script>
+<script src="ws.2.0.1.js"></script>
+<script src="debug.2.0.1.js"></script>
+<script src="loading-states.2.0.1.js"></script>
 
-.answered {
-    border: solid red 2px;
-}
-</style>
 </head>
-<body>
+<body hx-boost="true" hx-ext="morphdom-swap" hx-swap="morphdom">
 % for (['', 'Open'], ['all', 'All']) {
 %    my ($url, $caption) = $_->@*;
 <a href="<%= url_for("/$url" ) %>" class="<%= $url eq $next ? 'current' : '' %>"><%= $caption %></a>
