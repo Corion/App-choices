@@ -36,6 +36,7 @@ create view question_status as
     select
         q.question_id
       , q.question_json
+      , q.created as question_created
       , r.result_id
       , r.result_json
       , r.status

@@ -47,7 +47,7 @@ sub last_answers($limit=3) {
     my $last_answers = $dbh->selectall_arrayref(<<~'SQL', { Slice => {}}, $limit);
         select *
           from question_status
-         order by created
+         order by question_created
          limit ?
     SQL
 
