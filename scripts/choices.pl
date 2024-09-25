@@ -76,7 +76,7 @@ sub build_responses( $open_questions, $open_choices ) {
         my $res;
         # As these are all open questions, create fake responses wrapping them
         # or use the responses we already got ("skipped", "open" (reopened))
-        if( $_->{response_id} ) {
+        if( $_->{result_id} ) {
             $res = Choice::Result->from_row( $_, $q );
 
         } else {
@@ -266,6 +266,7 @@ img {
 %# We also want to display answered questions here...
 % if( $responses->@* ) {
 %     for my $response ($responses->@*) {
+%         my $chosen = $response->choice;
 %         my $question = $response->question;
 <div class="question" id="question-<%= $question->question_id %>">
 <div class="title"><%= $question->question_text %></div>
@@ -276,7 +277,7 @@ img {
 %          }
   <div class="choices">
 %          for my $c ($question->choices->@*) {
-    <div class="choice">
+    <div class="choice <%= $chosen && $chosen->choice_id == $c->choice_id ? "answered" : ""%>">
         <a href="<%= url_for( '/choose' )->query(status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>">
 %              if( $c->choice_type eq 'image' ) {
         <img src="/img/<%= $c->data->{image} %>" />
@@ -289,6 +290,9 @@ img {
   </div>
   <a href="<%= url_for( '/choose' )->query(status => 'skipped', question => $question->question_id ) %>">Skip</a>
   <a href="<%= url_for( '/choose' )->query(status => 'none', question => $question->question_id ) %>">None of the above</a>
+%          if( $chosen ) {
+  <a href="<%= url_for( '/choose' )->query(status => 'open', question => $question->question_id ) %>">Reopen</a>
+%          }
 </div>
 %     }
 % } else {
