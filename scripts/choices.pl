@@ -231,6 +231,37 @@ get '/choose' => sub( $c ) {
     $c->redirect_to( "/$next" );
 };
 
+get '/choose-htmx' => sub( $c ) {
+    my $question = $c->param('question');
+    my $choice = $c->param('choice');
+    my $status = $c->param('status');
+
+    $valid_status{ $status }
+        or die "Invalid status '$status'";
+
+    # fetch question
+    #say "<$question>";
+    my $q = inflate_question( $dbh, 0+$question )
+        or die "Unknown question: '$question'";
+    # fetch choice, if given
+    my $ch;
+    if( $status eq 'answered' ) {
+        ($ch) = grep { $_->choice_id eq $choice } $q->choices->@*
+            or die "Unknown choice: '$choice'";
+    }
+    my $result = Choice::Result->new(
+        question => $q,
+        status => $status,
+        maybe choice => $ch,
+    );
+
+    # Store result in DB
+    store_result( $dbh, $result );
+
+    $c->stash(response => $result);
+    $c->render('response');
+};
+
 get '/img/<*image>' => sub( $c ) {
     my $fn = "C:/Users/Corion/Pictures/Background Control/" . $c->param('image');
     $c->reply->asset(Mojo::Asset::File->new(path => $fn));
