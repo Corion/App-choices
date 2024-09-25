@@ -57,6 +57,7 @@ my %module = (
         'DBIx::RunSQL'           => 0,
         'Mojo::JSON'             => 0,
         'Mojolicious::Lite'      => 0,
+        'Mojolicious::Static::Role::Compressed' => 0,
         'POSIX'                  => 0,
         'PerlX::Maybe'           => 0,
     },

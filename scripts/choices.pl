@@ -6,6 +6,8 @@ use DBIx::RunSQL;
 use PerlX::Maybe;
 use File::Basename 'dirname';
 
+app->static->with_roles('+Compressed');
+
 use Choice::Choice;
 use Choice::Question;
 use Choice::Result;
@@ -265,29 +267,6 @@ get '/choose-htmx' => sub( $c ) {
 get '/img/<*image>' => sub( $c ) {
     my $fn = "C:/Users/Corion/Pictures/Background Control/" . $c->param('image');
     $c->reply->asset(Mojo::Asset::File->new(path => $fn));
-};
-
-# Serve precompressed files
-# This should be Mojolicious::Static::Role::Compressed, which does caching etc.
-get '/<*jsfile>.js' => sub($c) {
-    my $fn = $c->param('jsfile') . ".js";
-    $fn =~ s/[^-\w.]//g;
-    my $mojo_base = $ENV{MOJO_HOME} // dirname($0);
-    my $base = "$mojo_base/public";
-    my $file = "$base/$fn";
-    my $gzipped = "$file.gz";
-    say "Looking for $gzipped";
-    if( -e "$gzipped" ) {
-        say "Found '$gzipped'";
-        $file = $gzipped;
-        $c->res->headers->content_encoding('gzip');
-    } else {
-        say "No precompressed version found, sending '$file'";
-    }
-    my $ct = app->types->type("js");
-    $c->res->headers->content_type($ct);
-    $c->reply->file($file);
-    return 200;
 };
 
 app->start;
