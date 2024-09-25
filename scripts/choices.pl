@@ -42,6 +42,26 @@ sub open_questions($limit=3) {
 
     return build_responses( $open_questions, $open_choices );
 }
+
+sub last_answers($limit=3) {
+    my $last_answers = $dbh->selectall_arrayref(<<~'SQL', { Slice => {}}, $limit);
+        select *
+          from question_status
+         order by created
+         limit ?
+    SQL
+
+    my $choices = $dbh->selectall_arrayref(<<~'SQL', { Slice => {}});
+        select c.choice_id
+             , c.choice_json
+          from question_status q
+          join choice c on c.question_id = q.question_id
+      order by c.question_id, c.choice_id
+    SQL
+
+    return build_responses( $last_answers, $choices );
+}
+
 sub build_responses( $open_questions, $open_choices ) {
     my %choices;
     for my $c ($open_choices->@*) {
@@ -164,9 +184,14 @@ say "Stored question as $id";
 
 plugin 'DefaultHelpers';
 get '/' => sub($c) {
-    dump_questions();
     my @open = open_questions(3);
     $c->stash( responses => \@open );
+    $c->render('index')
+};
+
+get '/all' => sub($c) {
+    my @all = last_answers(3);
+    $c->stash( responses => \@all );
     $c->render('index')
 };
 
@@ -236,6 +261,8 @@ img {
 </style>
 </head>
 <body>
+<a href="<%= url_for("/" ) %>">Open</a>
+<a href="<%= url_for("/all" ) %>">All</a>
 %# We also want to display answered questions here...
 % if( $responses->@* ) {
 %     for my $response ($responses->@*) {
