@@ -292,33 +292,10 @@ get '/<*jsfile>.js' => sub($c) {
 app->start;
 
 __DATA__
-@@index.html.ep
-<!DOCTYPE html>
-<html>
-<head>
-<title>Choices</title>
-<link rel="stylesheet" href="choices.css" />
-
-<meta htmx.config.allowScriptTags="true">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="bootstrap.5.3.3.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-<script type="module" src="/morphdom-esm.2.7.4.js"></script>
-<script src="morphdom-swap.1.9.12.js"></script>
-<script src="htmx.2.0.1.min.js"></script>
-
-</head>
-<body hx-boost="true" hx-ext="morphdom-swap" hx-swap="morphdom">
-% for (['', 'Open'], ['all', 'All']) {
-%    my ($url, $caption) = $_->@*;
-<a href="<%= url_for("/$url" ) %>" class="<%= $url eq $next ? 'current' : '' %>"><%= $caption %></a>
-% }
-%# We also want to display answered questions here...
-% if( $responses->@* ) {
-%     for my $response ($responses->@*) {
+@@response.html.ep
 %         my $chosen = $response->choice;
 %         my $question = $response->question;
-<div class="question" id="question-<%= $question->question_id %>">
+<div class="question" id="question-<%= $question->question_id %>" >
 <div class="title"><%= $question->question_text %></div>
 %          if( $question->context ) {
     <div class="context">
@@ -328,7 +305,10 @@ __DATA__
   <div class="choices">
 %          for my $c ($question->choices->@*) {
     <div class="choice <%= $chosen && $chosen->choice_id == $c->choice_id ? "answered" : ""%>">
-        <a href="<%= url_for( '/choose' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>">
+        <a href="<%= url_for( '/choose' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>"
+           hx-get="<%= url_for( '/choose-htmx' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>"
+           hx-target="closest .question"
+        >
 %              if( $c->choice_type eq 'image' ) {
         <img src="/img/<%= $c->data->{image} %>" />
 %              } elsif( $c->choice_type eq 'text' ) {
@@ -344,6 +324,38 @@ __DATA__
   <a href="<%= url_for( '/choose' )->query(next => $next, status => 'open', question => $question->question_id ) %>">Reopen</a>
 %          }
 </div>
+
+@@index.html.ep
+<!DOCTYPE html>
+<html>
+<head>
+<title>Choices</title>
+<link rel="stylesheet" href="choices.css" />
+
+<meta htmx.config.allowScriptTags="true">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="bootstrap.5.3.3.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="htmx.2.0.1.min.js"></script>
+<script src="idiomorph-0.3.0.js"></script>
+<script src="idiomorph-htmx.0.3.0.js"></script>
+
+</head>
+<body
+    hx-ext="morph"
+    hx-swap="morph"
+    hx-boost="true"
+>
+<nav>
+% for (['', 'Open'], ['all', 'All']) {
+%    my ($url, $caption) = $_->@*;
+<a href="<%= url_for("/$url" ) %>" class="<%= $url eq $next ? 'current' : '' %>"><%= $caption %></a>
+% }
+</nav>
+%# We also want to display answered questions here...
+% if( $responses->@* ) {
+%     for my $response ($responses->@*) {
+%=include('response', response => $response );
 %     }
 % } else {
     <b>No more open questions</b>
