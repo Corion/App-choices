@@ -186,12 +186,14 @@ plugin 'DefaultHelpers';
 get '/' => sub($c) {
     my @open = open_questions(3);
     $c->stash( responses => \@open );
+    $c->stash( next => '' );
     $c->render('index')
 };
 
 get '/all' => sub($c) {
     my @all = last_answers(3);
     $c->stash( responses => \@all );
+    $c->stash( next => 'all' );
     $c->render('index')
 };
 
@@ -200,6 +202,8 @@ get '/choose' => sub( $c ) {
     my $question = $c->param('question');
     my $choice = $c->param('choice');
     my $status = $c->param('status');
+    my $next = $c->param('next');
+    $next =~ s!\W!!g;
 
     $valid_status{ $status }
         or die "Invalid status '$status'";
@@ -223,7 +227,7 @@ get '/choose' => sub( $c ) {
     # Store result in DB
     store_result( $dbh, $result );
 
-    $c->redirect_to( "/" );
+    $c->redirect_to( "/$next" );
 };
 
 get '/img/<*image>' => sub( $c ) {
@@ -245,6 +249,10 @@ img {
     max-height: 400px;
 }
 
+.current {
+    font-weight: 800;
+}
+
 .choices {
     display: grid;
     grid-template-columns: repeat(auto-fill, 400px);
@@ -261,8 +269,10 @@ img {
 </style>
 </head>
 <body>
-<a href="<%= url_for("/" ) %>">Open</a>
-<a href="<%= url_for("/all" ) %>">All</a>
+% for (['', 'Open'], ['all', 'All']) {
+%    my ($url, $caption) = $_->@*;
+<a href="<%= url_for("/$url" ) %>" class="<%= $url eq $next ? 'current' : '' %>"><%= $caption %></a>
+% }
 %# We also want to display answered questions here...
 % if( $responses->@* ) {
 %     for my $response ($responses->@*) {
@@ -278,7 +288,7 @@ img {
   <div class="choices">
 %          for my $c ($question->choices->@*) {
     <div class="choice <%= $chosen && $chosen->choice_id == $c->choice_id ? "answered" : ""%>">
-        <a href="<%= url_for( '/choose' )->query(status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>">
+        <a href="<%= url_for( '/choose' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>">
 %              if( $c->choice_type eq 'image' ) {
         <img src="/img/<%= $c->data->{image} %>" />
 %              } elsif( $c->choice_type eq 'text' ) {
@@ -288,10 +298,10 @@ img {
     </div>
 %          }
   </div>
-  <a href="<%= url_for( '/choose' )->query(status => 'skipped', question => $question->question_id ) %>">Skip</a>
-  <a href="<%= url_for( '/choose' )->query(status => 'none', question => $question->question_id ) %>">None of the above</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'skipped', question => $question->question_id ) %>">Skip</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'none', question => $question->question_id ) %>">None of the above</a>
 %          if( $chosen ) {
-  <a href="<%= url_for( '/choose' )->query(status => 'open', question => $question->question_id ) %>">Reopen</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'open', question => $question->question_id ) %>">Reopen</a>
 %          }
 </div>
 %     }
