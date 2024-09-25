@@ -17,6 +17,10 @@ img {
     align-items: center;
 }
 
+.choice {
+    border: solid 2px transparent;
+}
+
 .answered {
-    border: solid red 2px;
+    border-color: red;
 }
