@@ -40,7 +40,9 @@ sub open_questions($limit=3) {
       order by c.question_id, c.choice_id
     SQL
 
-    # Create choices from that
+    return build_responses( $open_questions, $open_choices );
+}
+sub build_responses( $open_questions, $open_choices ) {
     my %choices;
     for my $c ($open_choices->@*) {
         my $ch = Choice::Choice->from_row( $c );
