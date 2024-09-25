@@ -2,6 +2,7 @@ package Choice::Result 0.01;
 use 5.020;
 use experimental 'signatures';
 use Moo 2;
+use Carp 'croak';
 use POSIX 'strftime';
 use Mojo::JSON 'decode_json', 'encode_json';
 
@@ -56,7 +57,14 @@ sub to_JSON( $self ) {
 sub from_row( $class, $row, $question=undef ) {
     my $id = $row->{result_id};
     $row = decode_json($row->{result_json});
-    return $class->new({ result_id => $id, $row->%*, question => $question });
+    my $chosen;
+    if( $question ) {
+        ($chosen) = grep { $_->choice_id eq $row->{choice_id} } $question->choices->@*;
+    };
+    if( $row->{choice_id} and not $chosen) {
+        croak "Have choice_id '$row->{choice_id}' but no choice object found in question!";
+    };
+    return $class->new({ result_id => $id, $row->%*, question => $question, choice=>$chosen });
 }
 
 1;
