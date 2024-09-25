@@ -316,7 +316,7 @@ __DATA__
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="bootstrap.5.3.3.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
-<script src="htmx.2.0.1.min.js"></script>
+<script src="htmx.2.0.1.js"></script>
 <script src="idiomorph.0.3.0.js"></script>
 <script src="idiomorph-htmx.0.3.0.js"></script>
 
