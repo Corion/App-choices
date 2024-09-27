@@ -155,31 +155,36 @@ sub store_question( $dbh, $question ) {
     return $question_id;
 }
 
-my $q = Choice::Question->new(
-    question_text => 'What is the airspeed of an unladen swallow?',
-    context => 'This is a Monty Python question',
-    creator => $0,
-);
-$q->add(
-    choice_type => 'text',
-    data => {
+sub text_question( $question, @choices ) {
+    my $q = Choice::Question->new( $question );
+
+    for my $c (@choices) {
+        $q->add( Choice::Choice->new(
+            data => $c,
+            choice_type => 'text'
+        ));
+    }
+
+    return $q;
+};
+
+my $q = text_question( {
+        question_text => 'What is the airspeed of an unladen swallow?',
+        context => 'This is a Monty Python question',
+        creator => $0,
+    },
+    {
         title => 'straight',
         text  => '40 km/h',
     },
-);
-$q->add(
-    choice_type => 'text',
-    data => {
+    {
         title => 'straight',
         text  => '11 m/s',
     },
-);
-$q->add(
-    choice_type => 'text',
-    data => {
+    {
         title => 'counter',
         text  => 'An African or European swallow?',
-    },
+    }
 );
 
 my $id = store_question( $dbh, $q );
