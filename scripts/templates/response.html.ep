@@ -1,0 +1,32 @@
+%         my $chosen = $response->choice;
+%         my $question = $response->question;
+<div class="question" id="question-<%= $question->question_id %>" >
+<div class="title"><%= $question->question_text %></div>
+%          if( $question->context ) {
+    <div class="context">
+    <%== $question->context %>
+    </div>
+%          }
+  <div class="choices">
+%          for my $c ($question->choices->@*) {
+    <div class="choice <%= $chosen && $chosen->choice_id == $c->choice_id ? "answered" : ""%>">
+        <a href="<%= url_for( '/choose' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>"
+           hx-get="<%= url_for( '/choose-htmx' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>"
+           hx-target="closest .question"
+        >
+%              if( $c->choice_type eq 'image' ) {
+        <img src="/img/<%= $c->data->{image} %>" />
+%              } elsif( $c->choice_type eq 'text' ) {
+        <%= $c->data->{text} %>
+%              }
+        </a>
+    </div>
+%          }
+  </div>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'skipped', question => $question->question_id ) %>">Skip</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'none', question => $question->question_id ) %>">None of the above</a>
+%          if( $chosen ) {
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'open', question => $question->question_id ) %>">Reopen</a>
+%          }
+</div>
+

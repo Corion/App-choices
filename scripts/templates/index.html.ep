@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Choices</title>
+<link rel="stylesheet" href="choices.css" />
+
+<meta htmx.config.allowScriptTags="true">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="bootstrap.5.3.3.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="htmx.2.0.1.js"></script>
+<script src="idiomorph.0.3.0.js"></script>
+<script src="idiomorph-htmx.0.3.0.js"></script>
+
+</head>
+<body
+    hx-ext="morph"
+    hx-swap="morph"
+    hx-boost="true"
+>
+<nav>
+% for (['', 'Open'], ['all', 'All']) {
+%    my ($url, $caption) = $_->@*;
+<a href="<%= url_for("/$url" ) %>" class="<%= $url eq $next ? 'current' : '' %>"><%= $caption %></a>
+% }
+</nav>
+%# We also want to display answered questions here...
+% if( $responses->@* ) {
+%     for my $response ($responses->@*) {
+%=include('response', response => $response );
+%     }
+% } else {
+    <b>No more open questions</b>
+% }
+</body>
+</html>
