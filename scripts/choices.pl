@@ -155,18 +155,27 @@ sub store_question( $dbh, $question ) {
     return $question_id;
 }
 
-sub text_question( $question, @choices ) {
+sub type_question( $type, $question, $choices ) {
     my $q = Choice::Question->new( $question );
 
-    for my $c (@choices) {
+    for my $c ($choices->@*) {
         $q->add( Choice::Choice->new(
             data => $c,
-            choice_type => 'text'
+            choice_type => $type
         ));
     }
 
     return $q;
 };
+
+sub text_question( $question, @choices ) {
+    return type_question( text => $question, \@choices )
+}
+
+sub image_question( $question, @choices ) {
+    return type_question( image => $question, \@choices )
+};
+
 
 my $q = text_question( {
         question_text => 'What is the airspeed of an unladen swallow?',
