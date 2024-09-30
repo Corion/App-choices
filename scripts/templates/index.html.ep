@@ -12,6 +12,13 @@
 <script src="idiomorph.0.3.0.js"></script>
 <script src="idiomorph-htmx.0.3.0.js"></script>
 
+<style>
+.fade-me-out.htmx-swapping {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+</style>
+
 </head>
 <body
     hx-ext="morph"
