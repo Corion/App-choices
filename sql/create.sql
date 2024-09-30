@@ -68,17 +68,17 @@ insert into question ( question_id, question_json)
 values (1, '{"question_text":"Best image","context":"","creator":"setup"}');
 
 insert into choice (choice_id, choice_json)
-values (1, '{"question_id":1, "choice_type":"image", "data":{"image":"IMG_6764.CR2.jpg","title":"IMG_6764.CR2.jpg"}}');
+values (1, '{"question_id":1, "choice_type":"image", "data":{"image":"img/IMG_6764.CR2.jpg","title":"IMG_6764.CR2.jpg"}}');
 insert into choice (choice_id, choice_json)
-values (2, '{"question_id":1, "choice_type":"image", "data":{"image":"IMG_9577.CR2.jpg","title":"IMG_9577.CR2.jpg"}}');
+values (2, '{"question_id":1, "choice_type":"image", "data":{"image":"img/IMG_9577.CR2.jpg","title":"IMG_9577.CR2.jpg"}}');
 insert into choice (choice_id, choice_json)
-values (3, '{"question_id":1, "choice_type":"image", "data":{"image":"IMG_20220928_182105_HDR.jpg","title":"IMG_20220928_182105_HDR.jpg"}}');
+values (3, '{"question_id":1, "choice_type":"image", "data":{"image":"img/IMG_20220928_182105_HDR.jpg","title":"IMG_20220928_182105_HDR.jpg"}}');
 insert into choice (choice_id, choice_json)
-values (4, '{"question_id":1, "choice_type":"image", "data":{"image":"IMG_20240809_151502.jpg","title":"IMG_20240809_151502.jpg"}}');
+values (4, '{"question_id":1, "choice_type":"image", "data":{"image":"img/IMG_20240809_151502.jpg","title":"IMG_20240809_151502.jpg"}}');
 
 insert into question ( question_id, question_json)
 values (2, '{"question_text":"CD cover for ...","context":"","creator":"setup"}');
 insert into choice (choice_id, choice_json)
-values (5, '{"question_id":2, "choice_type":"image", "data":{"image":"IMG_6764.CR2.jpg","title":"IMG_6764.CR2.jpg"}}');
+values (5, '{"question_id":2, "choice_type":"image", "data":{"image":"img/IMG_6764.CR2.jpg","title":"IMG_6764.CR2.jpg"}}');
 insert into choice (choice_id, choice_json)
-values (6, '{"question_id":2, "choice_type":"image", "data":{"image":"IMG_9577.CR2.jpg","title":"IMG_9577.CR2.jpg"}}');
+values (6, '{"question_id":2, "choice_type":"image", "data":{"image":"img/IMG_9577.CR2.jpg","title":"IMG_9577.CR2.jpg"}}');

@@ -15,7 +15,7 @@
            hx-target="closest .question"
         >
 %              if( $c->choice_type eq 'image' ) {
-        <img src="/img/<%= $c->data->{image} %>" />
+        <img src="<%= $c->data->{image} %>" />
 %              } elsif( $c->choice_type eq 'text' ) {
         <%= $c->data->{text} %>
 %              }
