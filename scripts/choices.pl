@@ -195,9 +195,30 @@ my $q = text_question( {
         text  => 'An African or European swallow?',
     }
 );
-
 my $id = store_question( $dbh, $q );
-say "Stored question as $id";
+
+my $fsdb = 'http://localhost:3001';
+my $q2 = image_question( {
+        question_text => 'What is the best CD cover image?',
+        context => '<a href="https://media.dyn.datenzoo.de/media/playlist/2124">The album is here</a>',
+        creator => $0,
+    },
+    {
+        title => 'straight',
+        #image => 'https://media.dyn.datenzoo.de/media/asset/unsorted/Bootlegs/Mashup Power Hour - Un-Mixed/FRONT COVER.jpg',
+        image => "$fsdb/media/asset/unsorted/Bootlegs/Mashup Power Hour - Un-Mixed/FRONT COVER.jpg",
+    },
+    {
+        title => 'straight',
+        image => "$fsdb/media/asset/unsorted/Bootlegs/Mashup Power Hour - Un-Mixed/CREDITS.jpg",
+    },
+    {
+        title => 'counter',
+        image => "$fsdb/media/asset/unsorted/Bootlegs/Mashup Power Hour - Un-Mixed/BACK COVER.jpg"
+    }
+);
+my $id2 = store_question( $dbh, $q2 );
+say "Stored question as $id2";
 
 plugin 'DefaultHelpers';
 get '/' => sub($c) {
