@@ -213,7 +213,7 @@ my $id = store_question( $dbh, $q );
 my $fsdb = 'http://localhost:3001';
 my $q2 = image_question( {
         question_text => 'What is the best CD cover image?',
-        context => '<a href="https://media.dyn.datenzoo.de/media/playlist/2124">The album is here</a>',
+        context => qq{<a href="$fsdb/media/playlist/2124">The album is here</a>},
         creator => $0,
     },
     {
