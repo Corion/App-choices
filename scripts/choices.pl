@@ -13,11 +13,11 @@ use Choice::Question;
 use Choice::Result;
 
 app->moniker('choices');
-my $dbh = DBIx::RunSQL->create(
-    dsn => 'dbi:SQLite:dbname=:memory:',
-    sql => 'sql/create.sql',
-    options => { PrintError => 0, RaiseError => 1,},
-);
+plugin('NotYAMLConfig'); # still better than JSON
+
+my $dsn = app->config->{dsn} // 'dbi:SQLite:dbname=:memory:';
+my $dbh = DBI->connect($dsn, undef, undef, { PrintError => 0, RaiseError => 1,});
+
 
 sub dump_questions {
     my $sth = $dbh->prepare(<<~'SQL');
