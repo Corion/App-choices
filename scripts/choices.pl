@@ -237,13 +237,15 @@ get '/' => sub($c) {
     my @open = open_questions(3);
     $c->stash( responses => \@open );
     $c->stash( next => '' );
+    $c->stash( show_closed => 0 );
     $c->render('index')
 };
 
 get '/all' => sub($c) {
-    my @all = last_answers(3);
+    my @all = last_answers(100);
     $c->stash( responses => \@all );
     $c->stash( next => 'all' );
+    $c->stash( show_closed => 1);
     $c->render('index')
 };
 
