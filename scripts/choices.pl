@@ -18,6 +18,18 @@ plugin('NotYAMLConfig'); # still better than JSON
 my $dsn = app->config->{dsn} // 'dbi:SQLite:dbname=:memory:';
 my $dbh = DBI->connect($dsn, undef, undef, { PrintError => 0, RaiseError => 1,});
 
+eval { $dbh->selectall_arrayref( <<'SQL' ); 1 };
+    select *
+      from choice
+SQL
+my $need_create = $@;
+
+if( $need_create ) {
+    DBIx::RunSQL->create(
+        dbh => $dbh,
+        sql => 'sql/create.sql',
+    );
+}
 
 sub dump_questions {
     my $sth = $dbh->prepare(<<~'SQL');
