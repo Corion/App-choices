@@ -12,6 +12,7 @@ use Choice::Choice;
 use Choice::Question;
 use Choice::Result;
 
+app->moniker('choices');
 my $dbh = DBIx::RunSQL->create(
     dsn => 'dbi:SQLite:dbname=:memory:',
     sql => 'sql/create.sql',
