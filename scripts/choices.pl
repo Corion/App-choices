@@ -218,7 +218,6 @@ my $q2 = image_question( {
     },
     {
         title => 'straight',
-        #image => 'https://media.dyn.datenzoo.de/media/asset/unsorted/Bootlegs/Mashup Power Hour - Un-Mixed/FRONT COVER.jpg',
         image => "$fsdb/media/asset/unsorted/Bootlegs/Mashup Power Hour - Un-Mixed/FRONT COVER.jpg",
     },
     {
