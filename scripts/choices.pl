@@ -278,6 +278,7 @@ get '/choose' => sub( $c ) {
 
     # Store result in DB
     store_result( $dbh, $result );
+    $c->stash( show_closed => ($next eq 'all'));
 
     $c->redirect_to( "/$next" );
 };
@@ -286,6 +287,7 @@ get '/choose-htmx' => sub( $c ) {
     my $question = $c->param('question');
     my $choice = $c->param('choice');
     my $status = $c->param('status');
+    my $next = $c->param('next');
 
     $valid_status{ $status }
         or die "Invalid status '$status'";
@@ -310,6 +312,9 @@ get '/choose-htmx' => sub( $c ) {
     store_result( $dbh, $result );
 
     $c->stash(response => $result);
+    $c->stash( next => $next );
+    $c->stash( show_closed => ($next eq 'all'));
+
     $c->render('response');
 };
 
