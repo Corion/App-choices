@@ -23,7 +23,7 @@
 <body
     hx-ext="morph"
     hx-swap="morph"
-    hx-boost="true"
+    --hx-boost="true"
 >
 <nav>
 % for (['', 'Open'], ['all', 'All']) {
@@ -31,10 +31,10 @@
 <a href="<%= url_for("/$url" ) %>" class="<%= $url eq $next ? 'current' : '' %>"><%= $caption %></a>
 % }
 </nav>
-%# We also want to display answered questions here...
+%# We also want to display answered questions here, but only for 'all'
 % if( $responses->@* ) {
 %     for my $response ($responses->@*) {
-%=include('response', response => $response );
+%=include('response', next => $next, response => $response, show_closed => $show_closed );
 %     }
 % } else {
     <b>No more open questions</b>

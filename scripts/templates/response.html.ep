@@ -1,5 +1,6 @@
-%         my $chosen = $response->choice;
-%         my $question = $response->question;
+% my $chosen = $response->choice;
+% my $question = $response->question;
+% if( $show_closed or !$chosen ) {
 <div class="question" id="question-<%= $question->question_id %>" >
 <div class="title"><%= $question->question_text %></div>
 %          if( $question->context ) {
@@ -11,7 +12,9 @@
 %          for my $c ($question->choices->@*) {
     <div class="choice <%= $chosen && $chosen->choice_id == $c->choice_id ? "answered" : ""%>">
         <a href="<%= url_for( '/choose' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>"
+%              if( $show_closed ) {
            hx-get="<%= url_for( '/choose-htmx' )->query(next => $next, status => 'answered', choice => $c->choice_id, question => $question->question_id ) %>"
+%              }
            hx-target="closest .question"
         >
 %              if( $c->choice_type eq 'image' ) {
@@ -23,10 +26,25 @@
     </div>
 %          }
   </div>
-  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'skipped', question => $question->question_id ) %>">Skip</a>
-  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'none', question => $question->question_id ) %>">None of the above</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'skipped', question => $question->question_id ) %>"
+%          if( $show_closed ) {
+     hx-get="<%= url_for( '/choose-htmx' )->query(next => $next, status => 'skipped', question => $question->question_id ) %>"
+%          }
+     hx-target="closest .question"
+  >Skip</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'none', question => $question->question_id ) %>"
+%          if( $show_closed ) {
+     hx-get="<%= url_for( '/choose-htmx' )->query(next => $next, status => 'none', question => $question->question_id ) %>"
+%          }
+     hx-target="closest .question"
+  >None of the above</a>
 %          if( $chosen ) {
-  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'open', question => $question->question_id ) %>">Reopen</a>
+  <a href="<%= url_for( '/choose' )->query(next => $next, status => 'open', question => $question->question_id ) %>"
+%              if( $show_closed ) {
+     hx-get="<%= url_for( '/choose-htmx' )->query(next => $next, status => 'open', question => $question->question_id ) %>"
+%              }
+     hx-target="closest .question"
+  >Reopen</a>
 %          }
 </div>
-
+% }
